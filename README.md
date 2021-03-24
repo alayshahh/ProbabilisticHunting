@@ -1,1 +1,1 @@
-# ProbabilisticHunting
+# Probabilistic Hunting
