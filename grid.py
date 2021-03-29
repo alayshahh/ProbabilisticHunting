@@ -51,12 +51,13 @@ def generate_grid(dim: int = 50):
     return grid
 
 
-def create_image_from_grid(grid: list, factor: int = 1):
+def create_image_from_grid(grid: list, factor: int = 1, agent: tuple = None):
     """
     Given a grid that came from generate_grid(), return
     a PIL Image object that can be either saved as a file.
 
     factor will scale the image by a factor of len(grid)
+    agent is a tuple (i,j) representing the i,j position of the agent (it will draw a dot there on the image)
     """
 
     # convert terrain types to color codes
@@ -72,6 +73,7 @@ def create_image_from_grid(grid: list, factor: int = 1):
     for i in range(dim):
         for j in range(dim):
             r, g, b = RGB_VALUES[grid[i][j]]
+
             for ki in range(factor):
                 for kj in range(factor):
                     image_array[i*factor + ki, j *
@@ -80,6 +82,20 @@ def create_image_from_grid(grid: list, factor: int = 1):
                                 kj, 1] = g  # green channel
                     image_array[i*factor + ki, j *
                                 factor + kj, 2] = b  # blue channel
+
+    # draw an X on the square that has the agent if the param is not none
+    # The math here is gross but no real other way to do it
+    if agent != None:
+        i, j = agent
+        for ki in range(factor):
+            for kj in range(factor):
+                if abs(ki - kj) < 3:
+                    image_array[i*factor + ki, j*factor + kj, 0] = 255
+                    image_array[i*factor + ki, j*factor + kj, 1] = 0
+                    image_array[i*factor + ki, j*factor + kj, 2] = 0
+                    image_array[(i+1)*factor - ki - 1, j*factor + kj, 0] = 255
+                    image_array[(i+1)*factor - ki - 1, j*factor + kj, 1] = 30
+                    image_array[(i+1)*factor - ki - 1, j*factor + kj, 2] = 30
 
     img = Image.fromarray(image_array, 'RGB')
     return img
