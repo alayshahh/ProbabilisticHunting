@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from grid import Cell
+from cell import Cell
 from pprint import pprint
 import time
 import random
+from constants import PROBABILITY_DICT as probability_dict
 
 
-def run(grid, belief_matrix, probability_dict):
+def run(grid, belief_matrix):
     '''
     Moves through the grid and looks at cells with the highest probability of having the target to search. 
-    Does not account for distance between cells.
     '''
 
     score = 0
@@ -21,16 +21,23 @@ def run(grid, belief_matrix, probability_dict):
 
     while True:
         # find Cell with the highest probability
+        old_i, old_j = prev_max
         highest_prob, max_prob_loc = 0, (0, 0)
         for i in range(dim):
             for j in range(dim):
+                # find cell w highes prob
                 if belief_matrix[i][j] > highest_prob:
                     highest_prob = belief_matrix[i][j]
                     max_prob_loc = i, j
+                    dist_to_max = abs(i-old_i) + abs(j-old_j)
+                # pick the cell w highest prob and closest to current location
+                if belief_matrix[i][j] == highest_prob:
+                    dist = abs(i-old_i) + abs(j-old_j)
+                    if dist < dist_to_max:
+                        max_prob_loc = i, j
+                        dist_to_max = dist
 
-        old_i, old_j = prev_max
         i, j = max_prob_loc
-
         # calculate the moves made to get to the new max prob cell i.e manhattan distance from last max to cur max cell
         dist_travelled = abs(i - old_i) + abs(j - old_j)
         # score = total distance travelled + total # of searches
