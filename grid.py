@@ -18,13 +18,34 @@ class TERRAIN_TYPES(enum.Enum):
 #   Maps terrain type to the corresponding false negative rate
 #   We define false negative rate by the following:
 #
-#   P(Target not found in Cell i | Targent)
+#   P(Target not found in Cell i | Target)
 PROBABILITY_DICT = {
     TERRAIN_TYPES.FLAT: 0.1,
     TERRAIN_TYPES.HILLY: 0.3,
     TERRAIN_TYPES.FORESTED: 0.7,
     TERRAIN_TYPES.MAZE: 0.9
 }
+
+
+class Cell:
+    def __init__(self, terrain_type, is_agent):
+        self._terrain_type = terrain_type
+        self._is_agent = is_agent
+
+    @property
+    def terrain_type(self):
+        return self._terrain_type
+
+    # USED ONLY FOR RENDERING!!
+    @property
+    def is_agent(self):
+        return self._is_agent
+
+    def search(self):
+        if not self._is_agent:
+            return False
+        else:
+            return PROBABILITY_DICT[self._terrain_type] <= random()
 
 
 def generate_grid(dim: int = 50):
@@ -38,7 +59,9 @@ def generate_grid(dim: int = 50):
             TERRAIN_TYPES.MAZE = 0.25
     """
     # initialize our grid to flat by default
-    grid = [[TERRAIN_TYPES.FLAT for _ in range(dim)] for _ in range(dim)]
+    grid = [[None for _ in range(dim)] for _ in range(dim)]
+
+    agent_i, agent_j = randint(0, dim-1), randint(0, dim-1)
 
     # To achieve our distrobution, we are going to use a random number
     # generator, and branch accordingly
@@ -46,12 +69,13 @@ def generate_grid(dim: int = 50):
     for i in range(dim):
         for j in range(dim):
             val = randint(0, 3)
-            grid[i][j] = TERRAIN_TYPES(randint(0, 3))
+            grid[i][j] = Cell(TERRAIN_TYPES(randint(0, 3)),
+                              i == agent_i and j == agent_j)
 
     return grid
 
 
-def create_image_from_grid(grid: list, factor: int = 1, agent: tuple = None):
+def create_image_from_grid(grid: list, factor: int = 1):
     """
     Given a grid that came from generate_grid(), return
     a PIL Image object that can be either saved as a file.
@@ -72,7 +96,7 @@ def create_image_from_grid(grid: list, factor: int = 1, agent: tuple = None):
     image_array = np.zeros((dim*factor, dim*factor, 3), dtype=np.uint8)
     for i in range(dim):
         for j in range(dim):
-            r, g, b = RGB_VALUES[grid[i][j]]
+            r, g, b = RGB_VALUES[grid[i][j].terrain_type]
 
             for ki in range(factor):
                 for kj in range(factor):
@@ -85,17 +109,35 @@ def create_image_from_grid(grid: list, factor: int = 1, agent: tuple = None):
 
     # draw an X on the square that has the agent if the param is not none
     # The math here is gross but no real other way to do it
-    if agent != None:
-        i, j = agent
-        for ki in range(factor):
-            for kj in range(factor):
-                if abs(ki - kj) < 3:
-                    image_array[i*factor + ki, j*factor + kj, 0] = 255
-                    image_array[i*factor + ki, j*factor + kj, 1] = 0
-                    image_array[i*factor + ki, j*factor + kj, 2] = 0
-                    image_array[(i+1)*factor - ki - 1, j*factor + kj, 0] = 255
-                    image_array[(i+1)*factor - ki - 1, j*factor + kj, 1] = 30
-                    image_array[(i+1)*factor - ki - 1, j*factor + kj, 2] = 30
+
+    # find the agent
+    agent_i = agent_j = 0
+    for i in range(dim):
+        for j in range(dim):
+            if grid[i][j].is_agent:
+                agent_i, agent_j = i, j
+                break
+
+    i, j = agent_i, agent_j
+    for ki in range(factor):
+        for kj in range(factor):
+            if abs(ki - kj) < 3:
+                image_array[i*factor + ki, j*factor + kj, 0] = 255
+                image_array[i*factor + ki, j*factor + kj, 1] = 0
+                image_array[i*factor + ki, j*factor + kj, 2] = 0
+                image_array[(i+1)*factor - ki - 1, j*factor + kj, 0] = 255
+                image_array[(i+1)*factor - ki - 1, j*factor + kj, 1] = 30
+                image_array[(i+1)*factor - ki - 1, j*factor + kj, 2] = 30
 
     img = Image.fromarray(image_array, 'RGB')
     return img
+
+
+if __name__ == '__main__':
+    grid = generate_grid()
+    dim = len(grid)
+    # make belief matrix
+    belief_matrix = [[1/(dim**2) for _ in range(dim)] for _ in range(dim)]
+
+    # Agent 1
+    agent_1_score = agent1.run()
