@@ -16,14 +16,14 @@ def run(grid, belief_matrix):
     found = False
     dim = len(grid)
 
-    # we will start at 0,0 since all probs are equal
-    prev_max = (0, 0)
+    # we will start at random location since all probs are equal
+    prev_max = (random.randint(0, dim), random.randint(0, dim))
 
-    print("Starting search...")
+    # print("Starting search...")
 
     while True:
-        if score % 50 == 0:
-            print("Epoch " + str(score) + "...", end="\r")
+        # if score % 50 == 0:
+        #     print("Epoch " + str(score) + "...", end="\r")
 
         # find Cell with the highest probability
         old_i, old_j = prev_max

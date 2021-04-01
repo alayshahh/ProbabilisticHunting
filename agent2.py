@@ -16,8 +16,8 @@ def run(grid, belief_matrix):
     found = False
     dim = len(grid)
 
-    # we will start at 0,0 since all probs are equal
-    prev_max = (0, 0)
+    # we will start at random start point since all probs are equal
+    prev_max = (random.randint(0, dim), random.randint(0, dim))
 
     while True:
         # find Cell with the highest probability
@@ -29,7 +29,7 @@ def run(grid, belief_matrix):
                 cur_cell = grid[i][j]
                 # multiplies P(target in cell)*P(finding Target|target in cell) -> P(finding Targetin cell |obaservations)
                 cur_prob = belief_matrix[i][j] * \
-                    probability_dict[cur_cell.terrain_type]
+                    (1-probability_dict[cur_cell.terrain_type])
                 if cur_prob > highest_prob:
                     highest_prob = cur_prob
                     max_prob_loc = i, j
