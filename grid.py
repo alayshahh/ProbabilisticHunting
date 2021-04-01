@@ -6,6 +6,7 @@ from random import randint
 from PIL import Image
 import numpy as np
 import agent1
+import random
 
 
 class TERRAIN_TYPES(enum.Enum):
@@ -46,7 +47,7 @@ class Cell:
         if not self._is_agent:
             return False
         else:
-            return PROBABILITY_DICT[self._terrain_type] <= random()
+            return PROBABILITY_DICT[self._terrain_type] <= random.random()
 
 
 def generate_grid(dim: int = 50):
@@ -135,9 +136,9 @@ def create_image_from_grid(grid: list, factor: int = 1):
 
 
 if __name__ == '__main__':
-    grid = generate_grid(5)
+    grid = generate_grid(50)
     dim = len(grid)
-    # make belief matrix
+    # make belief matrix (initial belief is 1/ # of cells)
     belief_matrix = [[1/(dim**2) for _ in range(dim)] for _ in range(dim)]
 
     # Agent 1
