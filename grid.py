@@ -94,7 +94,7 @@ if __name__ == '__main__':
     belief_matrix = [[1/(dim**2) for _ in range(dim)] for _ in range(dim)]
 
     # Agent 1
-    agent_1_score = agent1.run(grid, belief_matrix, PROBABILITY_DICT)
+    agent_1_score = agent1.run(grid, belief_matrix)
     print(agent_1_score)
-    # agent_2_score = agent2.run(grid, belief_matrix, PROBABILITY_DICT)
+    # agent_2_score = agent2.run(grid, belief_matrix)
     # print(agent_2_score)
