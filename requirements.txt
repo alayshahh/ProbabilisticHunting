@@ -9,6 +9,7 @@ cycler==0.10.0
 decorator==4.4.2
 defusedxml==0.7.1
 entrypoints==0.3
+importlib-metadata==3.10.0
 ipykernel==5.5.0
 ipython==7.21.0
 ipython-genutils==0.2.0
@@ -54,7 +55,10 @@ six==1.15.0
 terminado==0.9.3
 testpath==0.4.4
 tornado==6.1
+tqdm==4.59.0
 traitlets==5.0.5
+typing-extensions==3.7.4.3
 wcwidth==0.2.5
 webencodings==0.5.1
 widgetsnbextension==3.5.1
+zipp==3.4.1
