@@ -19,7 +19,12 @@ def run(grid, belief_matrix):
     # we will start at 0,0 since all probs are equal
     prev_max = (0, 0)
 
+    print("Starting search...")
+
     while True:
+        if score % 50 == 0:
+            print("Epoch " + str(score) + "...", end="\r")
+
         # find Cell with the highest probability
         old_i, old_j = prev_max
         highest_prob, max_prob_loc = 0, (0, 0)
@@ -41,7 +46,7 @@ def run(grid, belief_matrix):
         # calculate the moves made to get to the new max prob cell i.e manhattan distance from last max to cur max cell
         dist_travelled = abs(i - old_i) + abs(j - old_j)
         # score = total distance travelled + total # of searches
-        score += (1+dist_travelled)
+        score += (1 + dist_travelled)
         prev_max = max_prob_loc
 
         max_prob_cell = grid[i][j]
@@ -76,7 +81,8 @@ def run(grid, belief_matrix):
     return score
 
 
-def update_belief_matrix(grid, belief_matrix, max_location, denominator, probability_dict):
+def update_belief_matrix(grid, belief_matrix, max_location, denominator,
+                         probability_dict):
     ''' 
     Update rest of beief belief_matrix
     '''
