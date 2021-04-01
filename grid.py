@@ -135,11 +135,11 @@ def create_image_from_grid(grid: list, factor: int = 1):
 
 
 if __name__ == '__main__':
-    grid = generate_grid()
+    grid = generate_grid(5)
     dim = len(grid)
     # make belief matrix
     belief_matrix = [[1/(dim**2) for _ in range(dim)] for _ in range(dim)]
 
     # Agent 1
-    agent_1_score = agent1.run(grid, belief_matrix)
+    agent_1_score = agent1.run(grid, belief_matrix, PROBABILITY_DICT)
     print(agent_1_score)
