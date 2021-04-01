@@ -99,5 +99,4 @@ if __name__ == '__main__':
     print(agent_1_score)
     # agent_2_score = agent2.run(grid, belief_matrix)
     # print(agent_2_score)
-    agent_1_score = agent1.run(grid, belief_matrix, PROBABILITY_DICT)
     print("Found agent. Took " + str(agent_1_score) + " steps")
