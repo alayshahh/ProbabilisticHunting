@@ -1,53 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-import enum
 from random import randint
 from PIL import Image
 import numpy as np
+from cell import Cell
+from constants import TERRAIN_TYPES, PROBABILITY_DICT, RGB_VALUES
 import agent1
+import agent2
 import random
-
-
-class TERRAIN_TYPES(enum.Enum):
-    FLAT = 0
-    HILLY = 1
-    FORESTED = 2
-    MAZE = 3  # Complex Maze of Caves and Tunnels
-
-
-# False negative dictionary
-#   Maps terrain type to the corresponding false negative rate
-#   We define false negative rate by the following:
-#
-#   P(Target not found in Cell i | Target)
-PROBABILITY_DICT = {
-    TERRAIN_TYPES.FLAT: 0.1,
-    TERRAIN_TYPES.HILLY: 0.3,
-    TERRAIN_TYPES.FORESTED: 0.7,
-    TERRAIN_TYPES.MAZE: 0.9
-}
-
-
-class Cell:
-    def __init__(self, terrain_type, is_agent):
-        self._terrain_type = terrain_type
-        self._is_agent = is_agent
-
-    @property
-    def terrain_type(self):
-        return self._terrain_type
-
-    # USED ONLY FOR RENDERING!!
-    @property
-    def is_agent(self):
-        return self._is_agent
-
-    def search(self):
-        if not self._is_agent:
-            return False
-        else:
-            return PROBABILITY_DICT[self._terrain_type] <= random.random()
 
 
 def generate_grid(dim: int = 50):
@@ -85,14 +45,6 @@ def create_image_from_grid(grid: list, factor: int = 1):
     factor will scale the image by a factor of len(grid)
     agent is a tuple (i,j) representing the i,j position of the agent (it will draw a dot there on the image)
     """
-
-    # convert terrain types to color codes
-    RGB_VALUES = {
-        TERRAIN_TYPES.FLAT: (255, 255, 255),
-        TERRAIN_TYPES.HILLY: (217, 217, 217),
-        TERRAIN_TYPES.FORESTED: (106, 168, 79),
-        TERRAIN_TYPES.MAZE: (67, 67, 67)
-    }
 
     dim = len(grid)
     image_array = np.zeros((dim*factor, dim*factor, 3), dtype=np.uint8)
@@ -144,3 +96,5 @@ if __name__ == '__main__':
     # Agent 1
     agent_1_score = agent1.run(grid, belief_matrix, PROBABILITY_DICT)
     print(agent_1_score)
+    # agent_2_score = agent2.run(grid, belief_matrix, PROBABILITY_DICT)
+    # print(agent_2_score)
