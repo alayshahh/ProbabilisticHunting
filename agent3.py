@@ -10,7 +10,7 @@ from constants import PROBABILITY_DICT as probability_dict
 
 def run(grid, belief_matrix):
     '''
-    Moves through the grid and looks at cells with the highest probability of finding the target to search. 
+    Moves through the grid and looks at cells with the highest probability of finding the target to search.
     '''
 
     score = 0
@@ -43,8 +43,12 @@ def run(grid, belief_matrix):
                     if dist < dist_to_max:
                         max_prob_loc = i, j
                         dist_to_max = dist
+        # look ahead and see if there is a better cell to search instead
+        max_prob_loc = one_step_lookahead(
+            belief_matrix, grid, max_prob_loc, prev_max)
 
         i, j = max_prob_loc
+
         # calculate the moves made to get to the new max prob cell i.e manhattan distance from last max to cur max cell
         dist_travelled = abs(i - old_i) + abs(j - old_j)
         # score = total distance travelled + total # of searches
@@ -92,7 +96,7 @@ def run(grid, belief_matrix):
 
 
 def update_belief_matrix(belief_matrix, max_location, denominator):
-    ''' 
+    '''
     Update rest of beief belief_matrix
     '''
     # P(in cur cell| not found in max cell) = P(in cur cell && not found in max cell)/ P (not found in max cell)
@@ -105,3 +109,45 @@ def update_belief_matrix(belief_matrix, max_location, denominator):
             if (i, j) != max_location:  # do not update the max cell
                 numerator = belief_matrix[i][j]
                 belief_matrix[i][j] = numerator / denominator
+
+
+def one_step_lookahead(belief_matrix, grid, max_prob_loc, prev_max):
+    old_i, old_j = prev_max
+    i, j = max_prob_loc
+    dim = len(belief_matrix)
+    cur_dist = abs(i-old_i)+abs(j-old_j)
+    max_prob_cell = grid[i][j]
+    # deep copy beilef matrix:
+    copy_belief = copy.deepcopy(belief_matrix)
+    # assume that we do not find in the cell after num_searches
+    num_searches = int(
+        (probability_dict[max_prob_cell.terrain_type]*10)) + 1
+    # update the copied beilef matrix
+    belief_given_obs_numerator = copy_belief[i][j] * \
+        ((probability_dict[max_prob_cell.terrain_type])**num_searches)
+
+    belief_given_obs_denominator = (copy_belief[i][j] *
+                                    probability_dict[max_prob_cell.terrain_type] +
+                                    (1 - copy_belief[i][j]))**num_searches
+    copy_belief[i][j] = belief_given_obs_numerator / \
+        belief_given_obs_denominator
+    update_belief_matrix(copy_belief, (i, j),
+                         belief_given_obs_denominator)
+    # find max:
+    highest_prob = 0
+    highest_prob_loc = (0, 0)
+    dist_to_max = dim+dim
+    for k in range(dim):
+        for l in range(dim):
+            if copy_belief[k][l] > highest_prob:
+                highest_prob = copy_belief[k][l]
+                highest_prob_loc = (k, l)
+                dist_to_max = abs(k-old_i) + abs(l-old_j)
+            if copy_belief[k][l] == highest_prob:
+                dist_to_max = abs(k-old_i) + abs(l-old_j)
+                highest_prob_loc = (k, l)
+
+    if dist_to_max < cur_dist:
+        return highest_prob_loc
+    else:
+        return max_prob_loc
