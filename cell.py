@@ -6,6 +6,7 @@ class Cell:
     def __init__(self, terrain_type, is_agent):
         self._terrain_type = terrain_type
         self._is_agent = is_agent
+        self.searched = False
 
     @property
     def terrain_type(self):
@@ -16,7 +17,12 @@ class Cell:
     def is_agent(self):
         return self._is_agent
 
+    @property
+    def already_searched(self) -> bool:
+        return self.searched
+
     def search(self):
+        self.searched = True
         if not self._is_agent:
             return False
         else:

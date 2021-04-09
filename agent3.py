@@ -21,31 +21,29 @@ def run(grid, belief_matrix):
     prev_max = (random.randint(0, dim), random.randint(0, dim))
 
     while not found:
-        # find Cell with the highest probability
-        # time.sleep(2)
+        # find Cell with the lowest cost
         old_i, old_j = prev_max
-        highest_prob, max_prob_loc = 0, (0, 0)
-        # print(belief_matrix)
+        lowest_cost, max_prob_loc = 4*dim, (0, 0)
         for i in range(dim):
             for j in range(dim):
-                # find cell w highes prob
+                # find cell w lowest cost
+                # compute cost as dist to cell + (1- prob of finding in cell) * (cost of next move)
+                # distacne to cell
+                dist = abs(i-old_i)+abs(j-old_j)
+                # number of searches at cell
+                num_searches = int(
+                    (probability_dict[max_prob_cell.terrain_type]*10)) + 1
+                if max_prob_cell.already_searched:
+                    num_searches = int(num_searches/2)
                 cur_cell = grid[i][j]
-                # multiplies P(target in cell)*P(finding Target|target in cell) -> P(finding Targetin cell |obaservations)
+              # multiplies P(target in cell)*P(finding Target|target in cell) -> P(finding Targetin cell |obaservations)
                 cur_prob = belief_matrix[i][j] * \
                     (1-probability_dict[cur_cell.terrain_type])
-                if cur_prob > highest_prob:
-                    highest_prob = cur_prob
+                cost = dist + num_searches + \
+                    (1-cur_prob)*one_step_lookahead(belief_matrix, grid, (i, j))
+                if cost < lowest_cost:
+                    lowest_cost = cost
                     max_prob_loc = i, j
-                    dist_to_max = abs(i-old_i) + abs(j-old_j)
-                # pick the cell w highest prob and closest to current location
-                if cur_prob == highest_prob:
-                    dist = abs(i-old_i) + abs(j-old_j)
-                    if dist < dist_to_max:
-                        max_prob_loc = i, j
-                        dist_to_max = dist
-        # look ahead and see if there is a better cell to search instead
-        max_prob_loc = one_step_lookahead(
-            belief_matrix, grid, max_prob_loc, prev_max)
 
         i, j = max_prob_loc
 
@@ -59,6 +57,9 @@ def run(grid, belief_matrix):
         # search the cell
         num_searches = int(
             (probability_dict[max_prob_cell.terrain_type]*10)) + 1
+        if max_prob_cell.already_searched:
+            num_searches = int(num_searches/2)
+
         # print("searching cell: ", max_prob_loc, ", ", num_searches, " times.")
         for _ in range(num_searches):
 
@@ -111,17 +112,24 @@ def update_belief_matrix(belief_matrix, max_location, denominator):
                 belief_matrix[i][j] = numerator / denominator
 
 
-def one_step_lookahead(belief_matrix, grid, max_prob_loc, prev_max):
-    old_i, old_j = prev_max
+def one_step_lookahead(belief_matrix, grid, max_prob_loc):
+    '''
+    Assumes that we will not find anything in the current cell and checks which cell will be the next searched
+    It will then return the distance of that cell from the max
+    '''
     i, j = max_prob_loc
     dim = len(belief_matrix)
-    cur_dist = abs(i-old_i)+abs(j-old_j)
     max_prob_cell = grid[i][j]
     # deep copy beilef matrix:
     copy_belief = copy.deepcopy(belief_matrix)
     # assume that we do not find in the cell after num_searches
     num_searches = int(
         (probability_dict[max_prob_cell.terrain_type]*10)) + 1
+
+    # if a cell has already been searched many times we dont want to search it as many times(not sure if we want to keep this yet)
+    if max_prob_cell.already_searched:
+        num_searches = int(num_searches/2)
+
     # update the copied beilef matrix
     belief_given_obs_numerator = copy_belief[i][j] * \
         ((probability_dict[max_prob_cell.terrain_type])**num_searches)
@@ -133,21 +141,16 @@ def one_step_lookahead(belief_matrix, grid, max_prob_loc, prev_max):
         belief_given_obs_denominator
     update_belief_matrix(copy_belief, (i, j),
                          belief_given_obs_denominator)
+
     # find max:
     highest_prob = 0
-    highest_prob_loc = (0, 0)
     dist_to_max = dim+dim
     for k in range(dim):
         for l in range(dim):
             if copy_belief[k][l] > highest_prob:
                 highest_prob = copy_belief[k][l]
-                highest_prob_loc = (k, l)
-                dist_to_max = abs(k-old_i) + abs(l-old_j)
+                dist_to_max = abs(k-i) + abs(l-j)
             if copy_belief[k][l] == highest_prob:
-                dist_to_max = abs(k-old_i) + abs(l-old_j)
-                highest_prob_loc = (k, l)
-
-    if dist_to_max < cur_dist:
-        return highest_prob_loc
-    else:
-        return max_prob_loc
+                if dist_to_max > abs(k-i) + abs(l-j):
+                    dist_to_max = abs(k-i) + abs(l-j)
+    return dist_to_max
