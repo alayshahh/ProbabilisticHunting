@@ -7,6 +7,7 @@ class Cell:
         self._terrain_type = terrain_type
         self._is_agent = is_agent
         self.searched = False
+        self.num_visits = 0
 
     @property
     def terrain_type(self):
@@ -20,6 +21,13 @@ class Cell:
     @property
     def already_searched(self) -> bool:
         return self.searched
+
+    @property
+    def visits(self) -> int:
+        return self.num_visits
+
+    def increment_visits(self):
+        self.num_visits += 1
 
     def search(self):
         self.searched = True

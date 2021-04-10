@@ -26,21 +26,20 @@ def run(grid, belief_matrix):
         lowest_cost, max_prob_loc = 4*dim, (0, 0)
         for i in range(dim):
             for j in range(dim):
+                if i == old_i and j == old_j:
+                    continue
                 # find cell w lowest cost
                 # compute cost as dist to cell + (1- prob of finding in cell) * (cost of next move)
                 # distacne to cell
                 dist = abs(i-old_i)+abs(j-old_j)
                 # number of searches at cell
-                num_searches = int(
-                    (probability_dict[max_prob_cell.terrain_type]*10)) + 1
-                if max_prob_cell.already_searched:
-                    num_searches = int(num_searches/2)
                 cur_cell = grid[i][j]
               # multiplies P(target in cell)*P(finding Target|target in cell) -> P(finding Targetin cell |obaservations)
                 cur_prob = belief_matrix[i][j] * \
                     (1-probability_dict[cur_cell.terrain_type])
-                cost = dist + num_searches + \
+                cost = dist + cur_cell.num_visits + \
                     (1-cur_prob)*one_step_lookahead(belief_matrix, grid, (i, j))
+                # print("cell :", (i, j), "cost: ", cost)
                 if cost < lowest_cost:
                     lowest_cost = cost
                     max_prob_loc = i, j
@@ -60,7 +59,8 @@ def run(grid, belief_matrix):
         if max_prob_cell.already_searched:
             num_searches = int(num_searches/2)
 
-        # print("searching cell: ", max_prob_loc, ", ", num_searches, " times.")
+        print("searching cell: ", max_prob_loc, ", ", num_searches, " times.")
+        max_prob_cell.increment_visits()
         for _ in range(num_searches):
 
             found = max_prob_cell.search()
@@ -145,12 +145,17 @@ def one_step_lookahead(belief_matrix, grid, max_prob_loc):
     # find max:
     highest_prob = 0
     dist_to_max = dim+dim
+    max_loc = (0, 0)
     for k in range(dim):
         for l in range(dim):
             if copy_belief[k][l] > highest_prob:
+                max_loc = (k, l)
                 highest_prob = copy_belief[k][l]
                 dist_to_max = abs(k-i) + abs(l-j)
             if copy_belief[k][l] == highest_prob:
                 if dist_to_max > abs(k-i) + abs(l-j):
+                    max_loc = (k, l)
                     dist_to_max = abs(k-i) + abs(l-j)
+
+    # print("Max loc: ", max_loc)
     return dist_to_max
