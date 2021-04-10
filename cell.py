@@ -29,6 +29,9 @@ class Cell:
     def increment_visits(self):
         self.num_visits += 1
 
+    def reset_visits(self):
+        self.num_visits = 0
+
     def search(self):
         self.searched = True
         if not self._is_agent:
